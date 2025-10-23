@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+*.pyc
+
+# Environment variables
+.env
+
+# Git
+.git/
+.gitignore
+
+# Uploads (will be created on Railway)
+uploads/*
+
+# IDE
+.vscode/
+.idea/
+
+# Documentation
+*.md
+!DEPLOYMENT.md
+
+# Railway
+.railway/
+
+# Windows
+Thumbs.db
+desktop.ini
