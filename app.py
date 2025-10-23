@@ -558,7 +558,10 @@ if __name__ == '__main__':
     print(f"Upload folder: {app.config['UPLOAD_FOLDER']}")
     print("=" * 60)
     print("\nStarting server...")
-    print("Open your browser to: http://localhost:5000")
+
+    # Get port from environment (Railway sets this)
+    port = int(os.getenv('PORT', 5000))
+    print(f"Server will run on port: {port}")
     print("=" * 60)
 
-    app.run(debug=True, host='0.0.0.0', port=5000, use_reloader=False)
+    app.run(debug=False, host='0.0.0.0', port=port, use_reloader=False)
