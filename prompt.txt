@@ -1,0 +1,24 @@
+Context section
+
+My company rico engineering services is attending the Boldly Brisbane Business Networking Forums tomorrow, refer to "Registration confirmation for the Boldly Brisbane Networking Forums email.pdf"
+
+The confirmation email had a mission booklet, refer to "2025 City of Brisbane Business Mission Booklet.pdf". I requested to meet with some of the delegates and received an introduction email, refer to "introduction email example.pdf"
+
+I have also prepared a capability statement for this event in the form of a microsite which is in here: https://resgroup.ae/ai_major_projects/
+
+
+Opportunity section
+
+The way Brisbane City Council is introducing delegates from Brisbane, Australia to businesses like myself, based in the UAE is by traditional emailing for the corresponding entities to continue their synergies exploration. I reckon that this dynamic could be improved by a state-of-the-art online CRM-like AI system. 
+
+
+Brainstorming section
+
+The state-of-the-art online CRM-like AI system needs to have a catchy name. Give me appropriate option names for such AI system.
+A business associate has a CRM platform which dashboard can be seen in "Qodequay CRM dashboard.jpg". I believe that such CRM platform could be customize for the stat-of-the-art online CRM-like AI system idea.
+However, this could be take a little bit long to develop. I do require a quick working concept for this afternoon so I can demonstrate to the Brisbane City Council tomorrow.
+My rapid prototype could be based on the following idea:
+a) An online microsite with frontend and backend host the ""2025 City of Brisbane Business Mission Booklet.pdf" as the knowledge base. It should be noted that this booklet has the delegates profiles alongside the objectives and mission of the business delegation visiting Dubai tomorrow, where I will meet them.
+b) The UAE business user can upload its CV and/or company profile or capability statement in the front end and the rapid prototype app generates a report with the top 3 identified delegates according to the synergies identified based on objectives, industry/sector, investor/funding seeker etc.
+c) The 
+

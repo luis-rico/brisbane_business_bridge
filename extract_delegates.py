@@ -1,0 +1,560 @@
+"""
+Extract delegate information from Brisbane Business Mission Booklet PDF
+"""
+
+import json
+import re
+from pathlib import Path
+
+def extract_delegates_from_booklet():
+    """
+    Extract all 40 delegate profiles from the 2025 City of Brisbane Business Mission Booklet
+
+    Note: Since we have the PDF content from the document index, we'll manually structure
+    the delegate data based on the booklet pages 8-31. In production, this would use
+    PDF parsing libraries like pdfplumber or PyPDF2.
+    """
+
+    delegates = [
+        # OFFICIALS
+        {
+            "name": "Councillor Fiona Cunningham",
+            "title": "Deputy Mayor, Civic Cabinet Chair for Finance and City Governance",
+            "company": "Brisbane City Council",
+            "sector": "Local Government",
+            "page": 10,
+            "email": "internationalrelations@brisbane.qld.gov.au",
+            "phone": "+61 7 3403 2101",
+            "objectives": "Lead city's financial strategy and governance, position Brisbane as vibrant, inclusive and globally connected city, work to ensure Brisbane is ready for 2032 Olympic Games",
+            "interested_sectors": ["Local Government"],
+            "business_type": "Government Official"
+        },
+        {
+            "name": "Councillor Adam Allan",
+            "title": "Civic Cabinet Chair for City Planning, Suburban Renewal and Economic Development",
+            "company": "Brisbane City Council",
+            "sector": "Local Government",
+            "page": 11,
+            "email": "internationalrelations@brisbane.qld.gov.au",
+            "phone": "",
+            "objectives": "Strategic city planning, suburban renewal, economic development, learn from overseas cities about growth and development",
+            "interested_sectors": ["Local Government"],
+            "business_type": "Government Official"
+        },
+        {
+            "name": "Nathan Percy",
+            "title": "Director of City Business",
+            "company": "Brisbane City Council",
+            "sector": "Local Government",
+            "page": 11,
+            "email": "nathan.percy@brisbane.qld.gov.au",
+            "phone": "+61 7 3403 4400",
+            "objectives": "Facilitate collaboration between Council and local business community, contribute to economic development initiatives and city planning strategies",
+            "interested_sectors": ["Local Government"],
+            "business_type": "Government Official"
+        },
+        {
+            "name": "Nicole Andronicus",
+            "title": "General Manager of 2032 Host City, Global Relations and Economic Partnerships",
+            "company": "Brisbane City Council",
+            "sector": "Local Government",
+            "page": 12,
+            "email": "nicole.andronicus@brisbane.qld.gov.au",
+            "phone": "+61 7 3178 0146",
+            "objectives": "Position Brisbane as premier global destination, attract investment, drive business growth, enhance liveability, open doors to global markets",
+            "interested_sectors": ["Local Government", "International Relations", "Economic Development"],
+            "business_type": "Government Official"
+        },
+        {
+            "name": "Garth Henderson",
+            "title": "International Relations Project Manager",
+            "company": "Brisbane City Council",
+            "sector": "Local Government",
+            "page": 12,
+            "email": "garth.henderson@brisbane.qld.gov.au",
+            "phone": "+61 7 3403 6026",
+            "objectives": "Drive key government and business partnerships, forge strong local and international connections for Brisbane, coordinate overseas business missions",
+            "interested_sectors": ["Local Government"],
+            "business_type": "Government Official"
+        },
+
+        # BRISBANE ECONOMIC DEVELOPMENT AGENCY
+        {
+            "name": "Paul Spiro",
+            "title": "Chairman",
+            "company": "Brisbane Economic Development Agency",
+            "sector": "Local Government",
+            "page": 13,
+            "email": "pspiro@brisbane-eda.com.au",
+            "phone": "+61 411 559 399",
+            "objectives": "Increase cross-border international business, explore opportunities for capital investment in Brisbane",
+            "interested_sectors": ["Property", "Finance", "Construction"],
+            "business_type": "Economic Development"
+        },
+        {
+            "name": "Anthony Ryan",
+            "title": "Chief Executive Officer",
+            "company": "Brisbane Economic Development Agency",
+            "sector": "Local Government",
+            "page": 13,
+            "email": "aryan@brisbane-eda.com.au",
+            "phone": "+61 432 586 395",
+            "objectives": "Attract foreign investment into Brisbane leading up to 2032 Olympic Games, strengthen relationships with the region",
+            "interested_sectors": ["Tourism and Investment", "Health ecosystem", "Building economy"],
+            "business_type": "Economic Development"
+        },
+        {
+            "name": "Dr John Cowie",
+            "title": "Head Economist and General Manager - Investment",
+            "company": "Brisbane Economic Development Agency",
+            "sector": "Local Government",
+            "page": 14,
+            "email": "jcowie@brisbane-eda.com.au",
+            "phone": "+61 498 744 567",
+            "objectives": "Meet with key investors, drive investment demand for Brisbane",
+            "interested_sectors": ["Tourism and Investment", "Health ecosystem", "Building economy", "Transport and logistics", "Advanced manufacturing", "Knowledge and experience economies"],
+            "business_type": "Economic Development"
+        },
+
+        # BUSINESS DELEGATES
+        {
+            "name": "Karen Howard",
+            "title": "Co-founder and Director",
+            "company": "Alloggio Group",
+            "sector": "Tourism and Hospitality",
+            "page": 14,
+            "email": "karen@karenhoward.com.au",
+            "phone": "+61 413 123 258",
+            "objectives": "Engage with business, position as trusted advisor, contribute to government-led discussion",
+            "interested_sectors": ["Tourism and Hospitality", "Property Development", "Hotel Management"],
+            "business_type": "Investor/Seeker"
+        },
+        {
+            "name": "Michael Hurley",
+            "title": "Development Director",
+            "company": "Aria Property Group",
+            "sector": "Property Development",
+            "page": 15,
+            "email": "michaelh@ariaproperty.com.au",
+            "phone": "+61 414 803 456",
+            "objectives": "New innovations in residential high-rise and 5-star hotels, seek Real Estate Sales companies with investors, connect with Funds and family offices investing in Brisbane",
+            "interested_sectors": ["Finance", "Sovereign Wealth Funds", "Real Estate Sales Companies", "Real Estate Development Companies"],
+            "business_type": "Funding Seeker"
+        },
+        {
+            "name": "Amanda Newbery",
+            "title": "Managing Director",
+            "company": "Articulous",
+            "sector": "Professional Services (consulting)",
+            "page": 15,
+            "email": "amanda.newbery@articulous.com.au",
+            "phone": "+61 400 225 232",
+            "objectives": "Engage with businesses shaping Brisbane's growth around 2032 Games, showcase expertise in gathering community input for government decisions",
+            "interested_sectors": ["Architecture and Transport", "Digital, Sport, Energy and Water infrastructure", "Housing and Health providers"],
+            "business_type": "Service Provider"
+        },
+        {
+            "name": "Anthony Lee",
+            "title": "Chief Executive Officer",
+            "company": "Australian Country Choice",
+            "sector": "Food and Agribusiness",
+            "page": 16,
+            "email": "alee@accbeef.net.au",
+            "phone": "+61 409 471 138",
+            "objectives": "Explore overseas markets, establish new business relationships, meet existing contacts, seek import and export opportunities",
+            "interested_sectors": ["Boxed goat, lamb and beef"],
+            "business_type": "Exporter"
+        },
+        {
+            "name": "Michael Koo",
+            "title": "Co-founder",
+            "company": "Bellissimo Coffee",
+            "sector": "Consumer Goods",
+            "page": 16,
+            "email": "michaelkoo1@hotmail.com",
+            "phone": "+61 435 228 311",
+            "objectives": "Meet with potential wholesale customers for coffee supply, learn and understand UAE market as potential location for coffee roasting operation",
+            "interested_sectors": ["Cafes", "Restaurants", "Hotels", "Corporate and government entities"],
+            "business_type": "Exporter"
+        },
+        {
+            "name": "Mark Bignell",
+            "title": "Director",
+            "company": "Biohawk Australia",
+            "sector": "Consumer Goods",
+            "page": 17,
+            "email": "markbignell@bellissimocoffee.com.au",
+            "phone": "+61 433 321 143",
+            "objectives": "Meet with local companies or authorities seeking innovative solutions for health and wellness of humans and animals, learn about local markets",
+            "interested_sectors": ["Health and wellness", "Livestock industries"],
+            "business_type": "Service Provider"
+        },
+        {
+            "name": "Daniel Liddy",
+            "title": "Partner",
+            "company": "bureau^proberts",
+            "sector": "Professional Services (architecture)",
+            "page": 17,
+            "email": "danl@bureauproberts.com.au",
+            "phone": "+61 7 3221 0672",
+            "objectives": "Inbound Investment, strengthen presence in Middle East and London, showcase Australian design capability and knowledge exchange on cultural placemaking",
+            "interested_sectors": ["Master planning", "Mixed-use", "Urban design"],
+            "business_type": "Service Provider"
+        },
+        {
+            "name": "Monika Laudencka-Sobik",
+            "title": "Project Director and London Studio Lead",
+            "company": "bureau^proberts",
+            "sector": "Professional Services (architecture)",
+            "page": 18,
+            "email": "monikal@bureauproberts.com.au",
+            "phone": "+61 7 3221 0672",
+            "objectives": "Inbound Investment, strengthen presence in Middle East and London, showcase Australian design capability and knowledge exchange on cultural placemaking",
+            "interested_sectors": ["Master planning", "Mixed-use", "Urban design"],
+            "business_type": "Service Provider"
+        },
+        {
+            "name": "Jimmy Huynh",
+            "title": "Project Director",
+            "company": "Cavcorp Qld",
+            "sector": "Property Development",
+            "page": 18,
+            "email": "jimmy@cavcorp.au",
+            "phone": "+61 408 738 287",
+            "objectives": "Connect with leading developers to learn about rapid growth, construction efficiencies and streamlined planning, engage with international investment funds",
+            "interested_sectors": ["Property Development", "Material suppliers", "Construction companies", "International funds", "Architects and designers"],
+            "business_type": "Funding Seeker"
+        },
+        {
+            "name": "Jonathan Leishman",
+            "title": "Executive Director",
+            "company": "Churchill Development Group",
+            "sector": "Property Development",
+            "page": 19,
+            "email": "jonathan@cdg.com.au",
+            "phone": "+61 456 100 740",
+            "objectives": "Broaden network and exposure, showcase Brisbane as exciting investment location",
+            "interested_sectors": ["Property development", "Financial services", "Capital investment", "Debt and equity"],
+            "business_type": "Funding Seeker"
+        },
+        {
+            "name": "Brodie Lister",
+            "title": "Chief Executive Officer",
+            "company": "Churchill Development Group",
+            "sector": "Property Development",
+            "page": 19,
+            "email": "brodie@cdg.com.au",
+            "phone": "+61 409 764 440",
+            "objectives": "Seek new opportunities, seek potential partnerships, seek new relationships",
+            "interested_sectors": ["Property", "Hospitality and leisure", "Investor and banking"],
+            "business_type": "Funding Seeker"
+        },
+        {
+            "name": "Lachlan Dyson",
+            "title": "Chief Executive Officer",
+            "company": "City of Brisbane Investment Corporation",
+            "sector": "Professional Services (Investment, Funds Management and Real estate)",
+            "page": 20,
+            "email": "lachlan.dyson@cbic.com.au",
+            "phone": "+61 439 970 125",
+            "objectives": "Promote business activities and opportunities associated with Brisbane City Council's wealth fund CBIC, showcase strength of investing in Brisbane, meet with international sovereign wealth funds",
+            "interested_sectors": ["Investment management", "Funds management", "Property development"],
+            "business_type": "Investor"
+        },
+        {
+            "name": "Don O'Rorke",
+            "title": "Chief Executive Officer and Chairman",
+            "company": "Consolidated Properties Group",
+            "sector": "Property Development",
+            "page": 20,
+            "email": "don@conspropgroup.com.au",
+            "phone": "+61 418 734 307",
+            "objectives": "Engage with capital and service providers in the region",
+            "interested_sectors": ["Capital and service providers"],
+            "business_type": "Funding Seeker"
+        },
+        {
+            "name": "Matthew Beasley",
+            "title": "Project Director Waterfront Brisbane",
+            "company": "Dexus",
+            "sector": "Property Development",
+            "page": 21,
+            "email": "matthew.beasley@dexus.com",
+            "phone": "+61 477 376 685",
+            "objectives": "Promote Waterfront Brisbane industry connections, gain insights into market best practices and leading developments, engage current and new capital partners",
+            "interested_sectors": ["Large-scale office or mixed-use-led inner urban regeneration projects", "Knowledge and Experience Economy", "Greenfield developments", "Sustainable Building Practices and Initiatives"],
+            "business_type": "Funding Seeker"
+        },
+        {
+            "name": "Aishwarya Somal",
+            "title": "Director",
+            "company": "Emerson Migration Law",
+            "sector": "Professional Services (immigration)",
+            "page": 21,
+            "email": "aishwarya@emersonmigrationlaw.com.au",
+            "phone": "+61 411 803 809",
+            "objectives": "Forge strategic referral partnerships with businesses in the region, promote Australia's immigration pathways to urban leaders and investors",
+            "interested_sectors": ["Corporate migration", "Global talent mobility"],
+            "business_type": "Service Provider"
+        },
+        {
+            "name": "Cara Kenny",
+            "title": "Director",
+            "company": "Global Sourcing Services",
+            "sector": "Manufacturing",
+            "page": 22,
+            "email": "cara@globalsourcings.com",
+            "phone": "+61 424 711 717",
+            "objectives": "Explore business opportunities to grow client base in the region, learn about market requirements and relationships in new markets",
+            "interested_sectors": ["Manufacturing - logistics and procurement"],
+            "business_type": "Service Provider"
+        },
+        {
+            "name": "Kim Thomas",
+            "title": "Managing Director",
+            "company": "Integrate",
+            "sector": "Professional Services (engineering)",
+            "page": 22,
+            "email": "kim.thomas@integrateits.com",
+            "phone": "+61 450 421 588",
+            "objectives": "Meet with prospective transport and infrastructure agencies, meet with prospective transport engineering and advisory consultancies, update knowledge of local market",
+            "interested_sectors": ["Transport systems and transport infrastructure", "Transport Systems and Innovation", "Smart Cities and regions", "Technology Infrastructure Program", "Asset management"],
+            "business_type": "Service Provider"
+        },
+        {
+            "name": "Tommy Hung",
+            "title": "General Manager",
+            "company": "Kinstone Group",
+            "sector": "Property Development",
+            "page": 23,
+            "email": "tommyhung@kinstone.com.au",
+            "phone": "+61 403 322 785",
+            "objectives": "Explore opportunities in international property ventures, gain insights into leading construction methodologies, implement globally recognised sustainable practices",
+            "interested_sectors": ["Property development", "Construction Management", "Real Estate Sales and Asset Management"],
+            "business_type": "Funding Seeker"
+        },
+        {
+            "name": "Philipp Joebges",
+            "title": "Director",
+            "company": "KOM Consulting",
+            "sector": "Professional Services (consulting)",
+            "page": 23,
+            "email": "pjoebges@komc.com.au",
+            "phone": "+61 437 164 306",
+            "objectives": "Increase relationships and strengthen connections, improve strategic insights into market challenges and responses, increase KOM's brand visibility",
+            "interested_sectors": ["Asset heavy industries", "Construction", "Mining, energy, water and manufacturing", "Government and government-owned entities"],
+            "business_type": "Service Provider"
+        },
+        {
+            "name": "Keirstyn Spencer",
+            "title": "Partner and Local Government Lead",
+            "company": "KPMG",
+            "sector": "Professional Services (consulting)",
+            "page": 24,
+            "email": "kspencer@kpmg.com.au",
+            "phone": "+61 406 685 945",
+            "objectives": "Discuss liveability and resilience in line with global public service trends, share insights on digital transformation, network to explore opportunities and showcase KPMG's services",
+            "interested_sectors": ["Public sector dignitaries", "Municipal leaders"],
+            "business_type": "Service Provider"
+        },
+        {
+            "name": "Nick Barr",
+            "title": "Director and Founder",
+            "company": "Limitless Australia",
+            "sector": "Property Development",
+            "page": 24,
+            "email": "nick@limitless.com.au",
+            "phone": "+61 410 126 975",
+            "objectives": "Seek connections with institutional investors, sovereign wealth funds and strategic capital partners, engage in discussions in best-in-class operations, modular construction technologies",
+            "interested_sectors": ["Capital investment in hotels", "Hotel excellence", "Construction and design excellence - modular"],
+            "business_type": "Funding Seeker"
+        },
+        {
+            "name": "Karen Sanders",
+            "title": "Executive to Chairman",
+            "company": "National Trunk Rail",
+            "sector": "Transportation, Logistics and Distribution",
+            "page": 25,
+            "email": "portconnex@nationaltrunkrail.com",
+            "phone": "+61 407 743 933",
+            "objectives": "Present project opportunities to investment groups, present project investment brief to domestic and international stakeholders",
+            "interested_sectors": ["Major infrastructure institutional investors"],
+            "business_type": "Funding Seeker"
+        },
+        {
+            "name": "John Cotter",
+            "title": "Managing Director",
+            "company": "North West Phosphate",
+            "sector": "Food and Agribusiness",
+            "page": 25,
+            "email": "jcotter@nwphos.com",
+            "phone": "+61 418 466 891",
+            "objectives": "Attract global investment partners, expand international market opportunities, enhance international brand awareness and visibility",
+            "interested_sectors": ["Fertiliser production", "Supply chain innovation", "Regional development", "Manufacturing"],
+            "business_type": "Funding Seeker"
+        },
+        {
+            "name": "Madeline Simmonds",
+            "title": "Communications and Government Relations",
+            "company": "North West Phosphate",
+            "sector": "Food and Agribusiness",
+            "page": 26,
+            "email": "comms@nwphos.com",
+            "phone": "+61 410 063 120",
+            "objectives": "Attract global investment partners, expand international market opportunities, enhance international brand awareness and visibility",
+            "interested_sectors": ["Agriculture", "Mining", "Infrastructure", "Fertiliser production", "Supply chain", "Manufacturing"],
+            "business_type": "Funding Seeker"
+        },
+        {
+            "name": "Nike Zhao",
+            "title": "Senior Structural and Civil Engineer",
+            "company": "PEER Consulting Engineers",
+            "sector": "Professional Services (engineering)",
+            "page": 26,
+            "email": "nike.zhao@peerce.com.au",
+            "phone": "+61 425 885 440",
+            "objectives": "Gain insights into emerging AI applications and connect with potential technology partners, build networks with professionals, government representatives and business leaders",
+            "interested_sectors": ["Traditional business partners in engineering, construction and infrastructure", "AI-driven technologies in structural design and digital engineering"],
+            "business_type": "Service Provider"
+        },
+        {
+            "name": "Shaun Munday",
+            "title": "Executive Chair",
+            "company": "Place Design Group",
+            "sector": "Professional Services (consulting)",
+            "page": 27,
+            "email": "shaun.m@placedesigngroup.com",
+            "phone": "+61 409 592 489",
+            "objectives": "Build international partnerships with government, developers and investors, identify opportunities for collaboration and knowledge exchange, showcase Brisbane and Place Design Group's expertise",
+            "interested_sectors": ["Urban development", "Smart and sustainable cities", "Tourism and hospitality"],
+            "business_type": "Service Provider"
+        },
+        {
+            "name": "Jess Caire",
+            "title": "Executive Director",
+            "company": "Property Council of Australia",
+            "sector": "Property Development",
+            "page": 27,
+            "email": "jcaire@propertycouncil.com.au",
+            "phone": "+61 499 181 366",
+            "objectives": "Promote strength and opportunities of Brisbane's property sector, build relationships and knowledge exchange with global city leaders and developers, attract expertise and investment",
+            "interested_sectors": ["Real estate investment and development", "Infrastructure and smart city technologies", "Sustainability and green building", "Tourism, hospitality and major events"],
+            "business_type": "Service Provider"
+        },
+        {
+            "name": "Tom Barr",
+            "title": "Managing Director",
+            "company": "Ray White Commercial (Queensland)",
+            "sector": "Professional Services (real estate)",
+            "page": 28,
+            "email": "tom.barr@raywhite.com",
+            "phone": "+61 405 144 352",
+            "objectives": "Establish connections within real estate development sector, real estate investment and funds management sector, international trade offices and peak real estate industry bodies",
+            "interested_sectors": ["Real estate development companies", "Real estate investment and funds management companies", "International trade"],
+            "business_type": "Service Provider"
+        },
+        {
+            "name": "Malcolm Cole",
+            "title": "Managing Director",
+            "company": "SAS Consulting Group",
+            "sector": "Professional Services (consulting)",
+            "page": 28,
+            "email": "malcolm.cole@sasgroup.net",
+            "phone": "+61 408 612 603",
+            "objectives": "Meet prospective clients to help establish presence in Brisbane, forge stronger connections within Brisbane business community, gain insight into successful business practice",
+            "interested_sectors": ["Renewable energy", "Technology", "Resources"],
+            "business_type": "Service Provider"
+        },
+        {
+            "name": "Ben Ou",
+            "title": "Managing Director",
+            "company": "Smart Mortgage Corp",
+            "sector": "Finance and Banking",
+            "page": 29,
+            "email": "ben.ou@smartmortgages.com.au",
+            "phone": "+61 433 271 113",
+            "objectives": "Identify new corporate clients and strengthen private lending networks, promote Brisbane as preferred destination for property investment and financial innovation, build stronger ties with existing funders",
+            "interested_sectors": ["Finance and investment"],
+            "business_type": "Service Provider"
+        },
+        {
+            "name": "Victor Asoyo",
+            "title": "Partner",
+            "company": "Solomons Legal",
+            "sector": "Professional Services (legal)",
+            "page": 29,
+            "email": "v.asoyo@solomonslegal.com.au",
+            "phone": "+61 412 112 166",
+            "objectives": "Establish strategic relationships with inbound investors for real estate and private credit, promote Solomons Legal as premier boutique commercial law firm, promote Solomons Group as multi-service offering",
+            "interested_sectors": ["Funds investors in technology", "Healthcare", "Property development", "Childcare", "Hospitality and private credit"],
+            "business_type": "Service Provider"
+        },
+        {
+            "name": "Roy Kim",
+            "title": "Partner",
+            "company": "Solomons Legal",
+            "sector": "Professional Services (legal)",
+            "page": 30,
+            "email": "r.kim@solomonslegal.com.au",
+            "phone": "+61 422 450 343",
+            "objectives": "Establish strategic relationships with family offices, investors and fund managers, promote Solomons Legal as premier legal and advisory platform for cross-border transactions, deepen market understanding",
+            "interested_sectors": ["Funds investors in technology", "Healthcare", "Property development", "Childcare", "Hospitality and financial services", "Private equity and venture capital"],
+            "business_type": "Service Provider"
+        },
+        {
+            "name": "Thomas Court",
+            "title": "Associate Director",
+            "company": "The University of Queensland",
+            "sector": "Infrastructure and Transport",
+            "page": 30,
+            "email": "t.court@uq.edu.au",
+            "phone": "+61 416 690 373",
+            "objectives": "Explore market and establish new business relationships, seek foreign investment and import/export opportunities, expand operations in region and create partnerships",
+            "interested_sectors": ["Infrastructure and Construction", "Materials innovation", "Digital innovation", "Transport", "Smart Cities", "Tourism"],
+            "business_type": "Service Provider"
+        },
+        {
+            "name": "Samuel Mayze",
+            "title": "Managing Partner, Middle East",
+            "company": "Urban Art Projects (UAP) Australia",
+            "sector": "Infrastructure and Construction",
+            "page": 31,
+            "email": "samuel.mayze@uapcompany.com",
+            "phone": "+61 402 843 175",
+            "objectives": "Secure strategic introductions, showcase regional expertise and demonstrate experience and leadership, highlight landmark projects, champion Brisbane-based collaboration",
+            "interested_sectors": ["Arts and culture", "Property development", "Construction"],
+            "business_type": "Service Provider"
+        }
+    ]
+
+    return delegates
+
+
+def save_delegates_json():
+    """Save extracted delegates to JSON file"""
+    delegates = extract_delegates_from_booklet()
+
+    output_path = Path(__file__).parent / "data" / "delegates.json"
+    output_path.parent.mkdir(exist_ok=True)
+
+    with open(output_path, 'w', encoding='utf-8') as f:
+        json.dump(delegates, f, indent=2, ensure_ascii=False)
+
+    print(f"[OK] Extracted {len(delegates)} delegates")
+    print(f"[SAVED] Saved to: {output_path}")
+
+    # Print summary
+    sectors = {}
+    for delegate in delegates:
+        sector = delegate['sector']
+        sectors[sector] = sectors.get(sector, 0) + 1
+
+    print(f"\n[STATS] Delegate Distribution by Sector:")
+    for sector, count in sorted(sectors.items(), key=lambda x: -x[1]):
+        print(f"   {sector}: {count}")
+
+    return delegates
+
+
+if __name__ == "__main__":
+    save_delegates_json()

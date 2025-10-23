@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brisbane Business Bridge AI - Intelligent Delegate Matching</title>
+    <meta name="description" content="AI-powered networking for Brisbane City Council's international business events">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Feather Icons -->
+    <script src="https://unpkg.com/feather-icons@4.29.0/dist/feather.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0066CC;
+            --primary-dark: #004C99;
+            --secondary: #00C8FF;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --text-primary: #1F2937;
+            --text-secondary: #6B7280;
+            --bg-light: #F9FAFB;
+            --bg-white: #FFFFFF;
+            --border: #E5E7EB;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-white);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .header-logos {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .header-logo-left img {
+            height: 60px;
+            width: auto;
+        }
+
+        .header-logo-right {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .header-logo-right img {
+            height: 40px;
+            width: auto;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .header-logo-right img:hover {
+            transform: scale(1.05);
+        }
+
+        .header-content {
+            text-align: center;
+        }
+
+        .header h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .event-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+
+        /* Main Card */
+        .main-card {
+            background: var(--bg-white);
+            padding: 3rem;
+            border-radius: 1rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        .section-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .intro-text {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            line-height: 1.8;
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .required {
+            color: var(--danger);
+        }
+
+        input[type="text"],
+        input[type="email"],
+        select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+        }
+
+        .file-upload {
+            border: 3px dashed var(--border);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-upload:hover {
+            border-color: var(--primary);
+            background: rgba(0, 102, 204, 0.05);
+        }
+
+        .file-upload.dragover {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .file-upload input[type="file"] {
+            display: none;
+        }
+
+        .file-icon {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .file-text {
+            color: var(--text-secondary);
+        }
+
+        .file-name {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-light);
+            border-radius: 0.5rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Button */
+        .btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 102, 204, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-block {
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* Loading */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Results */
+        .results {
+            display: none;
+            margin-top: 2rem;
+        }
+
+        .results.active {
+            display: block;
+        }
+
+        .match-card {
+            background: var(--bg-light);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--primary);
+        }
+
+        .match-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .match-rank {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .match-score {
+            background: var(--success);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 2rem;
+            font-weight: 700;
+        }
+
+        .match-info h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .match-company {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .match-details {
+            margin-top: 1rem;
+        }
+
+        .detail-row {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            align-items: flex-start;
+        }
+
+        .detail-row svg {
+            flex-shrink: 0;
+            margin-top: 0.25rem;
+        }
+
+        .synergy-analysis {
+            background: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            white-space: pre-wrap;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .stat-label {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        /* Error */
+        .error {
+            display: none;
+            background: #FEE2E2;
+            border-left: 4px solid var(--danger);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            color: #991B1B;
+        }
+
+        .error.active {
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .header-logos {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+
+            .header-logo-left img {
+                height: 50px;
+            }
+
+            .header-logo-right {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .header-logo-right img {
+                height: 35px;
+            }
+
+            .main-card {
+                padding: 1.5rem;
+            }
+
+            .match-header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <!-- Logo Header -->
+            <div class="header-logos">
+                <div class="header-logo-left">
+                    <img src="{{ url_for('static', filename='BCC_logo.jpg') }}" alt="Brisbane City Council">
+                </div>
+                <div class="header-logo-right">
+                    <span>Powered by Rico Engineering Services</span>
+                    <a href="https://resgroup.ae/" target="_blank" rel="noopener noreferrer">
+                        <img src="{{ url_for('static', filename='RES_logo.png') }}" alt="RES Group">
+                    </a>
+                </div>
+            </div>
+
+            <!-- Main Header Content -->
+            <div class="header-content">
+                <h1>Brisbane Business Bridge AI</h1>
+                <p>Intelligent Delegate Matching for Global Business Events</p>
+                <div class="event-badge">
+                    Boldly Brisbane Forum & APCS 2025
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">{{ delegate_count }}</div>
+                <div class="stat-label">Brisbane Delegates</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">3</div>
+                <div class="stat-label">Top Matches per User</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">&lt;15s</div>
+                <div class="stat-label">AI Analysis Time</div>
+            </div>
+        </div>
+
+        <!-- Main Card -->
+        <div class="main-card">
+            <h2 class="section-title">Find Your Perfect Matches</h2>
+            <p class="intro-text">
+                Upload your CV or capability statement and our AI will instantly analyze it against
+                <strong>{{ delegate_count }} Brisbane delegates</strong> to find your top 3 strategic connections
+                for the upcoming forum and APCS 2025. Powered by advanced semantic matching technology.
+            </p>
+
+            <!-- Error Message -->
+            <div id="error-message" class="error"></div>
+
+            <!-- Form -->
+            <form id="upload-form">
+                <div class="form-group">
+                    <label for="name">Your Name <span class="required">*</span></label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="company">Company / Organization <span class="required">*</span></label>
+                    <input type="text" id="company" name="company" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address <span class="required">*</span></label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="industry">Industry / Sector</label>
+                    <input type="text" id="industry" name="industry" placeholder="e.g., AI Technology, Property Development, Engineering">
+                </div>
+
+                <div class="form-group">
+                    <label>CV / Capability Statement <span class="required">*</span></label>
+                    <div class="file-upload" id="file-upload-area">
+                        <input type="file" id="file-input" name="file" accept=".pdf,.docx" required>
+                        <div class="file-icon">
+                            <i data-feather="upload-cloud"></i>
+                        </div>
+                        <div class="file-text">
+                            <strong>Click to upload</strong> or drag and drop<br>
+                            PDF or DOCX (Max 16MB)
+                        </div>
+                        <div id="file-name" class="file-name" style="display: none;"></div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-block" id="submit-btn">
+                    <i data-feather="zap"></i>
+                    Find My Top 3 Matches
+                </button>
+            </form>
+
+            <!-- Loading -->
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Analyzing your profile against {{ delegate_count }} delegates...</p>
+                <p style="font-size: 0.9rem; color: var(--text-secondary);">This usually takes 10-15 seconds</p>
+            </div>
+
+            <!-- Results -->
+            <div id="results" class="results">
+                <h2 class="section-title">Your Top 3 Strategic Matches</h2>
+                <div id="matches-container"></div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button class="btn btn-block" id="download-pdf-btn" style="flex: 1; background: linear-gradient(135deg, #00CC66, #009944);">
+                        <i data-feather="download"></i>
+                        Download PDF Report
+                    </button>
+                    <button class="btn btn-block" onclick="location.reload()" style="flex: 1;">
+                        <i data-feather="refresh-cw"></i>
+                        Match Another Profile
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Feather Icons
+        feather.replace();
+
+        // File upload handling
+        const fileUploadArea = document.getElementById('file-upload-area');
+        const fileInput = document.getElementById('file-input');
+        const fileName = document.getElementById('file-name');
+
+        fileUploadArea.addEventListener('click', () => fileInput.click());
+
+        fileUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.add('dragover');
+        });
+
+        fileUploadArea.addEventListener('dragleave', () => {
+            fileUploadArea.classList.remove('dragover');
+        });
+
+        fileUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                updateFileName();
+            }
+        });
+
+        fileInput.addEventListener('change', updateFileName);
+
+        function updateFileName() {
+            if (fileInput.files.length > 0) {
+                fileName.textContent = fileInput.files[0].name;
+                fileName.style.display = 'block';
+            }
+        }
+
+        // Form submission
+        const form = document.getElementById('upload-form');
+        const loading = document.getElementById('loading');
+        const results = document.getElementById('results');
+        const matchesContainer = document.getElementById('matches-container');
+        const errorMessage = document.getElementById('error-message');
+        const submitBtn = document.getElementById('submit-btn');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Hide error
+            errorMessage.classList.remove('active');
+
+            // Show loading, hide form
+            form.style.display = 'none';
+            loading.classList.add('active');
+            submitBtn.disabled = true;
+
+            try {
+                const formData = new FormData(form);
+
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Upload failed');
+                }
+
+                // Display results
+                displayResults(data);
+
+            } catch (error) {
+                errorMessage.textContent = error.message;
+                errorMessage.classList.add('active');
+                form.style.display = 'block';
+                loading.classList.remove('active');
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Store results data globally for PDF download
+        let currentResults = null;
+
+        function displayResults(data) {
+            currentResults = data; // Store for PDF download
+            loading.classList.remove('active');
+            results.classList.add('active');
+
+            matchesContainer.innerHTML = data.matches.map((match, index) => `
+                <div class="match-card">
+                    <div class="match-header">
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <div class="match-rank">${match.rank}</div>
+                            <div class="match-info">
+                                <h3>${match.name}</h3>
+                                <div class="match-company">${match.title}</div>
+                                <div class="match-company"><strong>${match.company}</strong></div>
+                            </div>
+                        </div>
+                        <div class="match-score">${match.score}% Match</div>
+                    </div>
+
+                    <div class="match-details">
+                        <div class="detail-row">
+                            <i data-feather="briefcase" style="color: var(--primary);"></i>
+                            <span><strong>Sector:</strong> ${match.sector}</span>
+                        </div>
+                        <div class="detail-row">
+                            <i data-feather="target" style="color: var(--primary);"></i>
+                            <span><strong>Interested In:</strong> ${match.interested_sectors.join(', ')}</span>
+                        </div>
+                        <div class="detail-row">
+                            <i data-feather="mail" style="color: var(--primary);"></i>
+                            <span><strong>Contact:</strong> <a href="mailto:${match.email}">${match.email}</a></span>
+                        </div>
+                        <div class="detail-row">
+                            <i data-feather="phone" style="color: var(--primary);"></i>
+                            <span><strong>Phone:</strong> ${match.phone}</span>
+                        </div>
+                    </div>
+
+                    <div class="synergy-analysis">
+                        ${match.synergy_analysis}
+                    </div>
+                </div>
+            `).join('');
+
+            // Re-initialize feather icons
+            feather.replace();
+
+            // Attach PDF download handler (after button is rendered)
+            attachPDFDownloadHandler();
+        }
+
+        // PDF Download Handler
+        function attachPDFDownloadHandler() {
+            const pdfBtn = document.getElementById('download-pdf-btn');
+            if (!pdfBtn) {
+                console.error('PDF download button not found');
+                return;
+            }
+
+            pdfBtn.addEventListener('click', async function() {
+            if (!currentResults) {
+                alert('No results available to download');
+                return;
+            }
+
+            try {
+                this.disabled = true;
+                this.innerHTML = '<i data-feather="loader"></i> Generating PDF...';
+                feather.replace();
+
+                const response = await fetch('/download_pdf', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(currentResults)
+                });
+
+                if (!response.ok) {
+                    throw new Error('PDF generation failed');
+                }
+
+                // Get the PDF blob
+                const blob = await response.blob();
+
+                // Create download link
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+
+                // Generate filename with current date
+                const username = currentResults.user.name.replace(/\s+/g, '_');
+                const filename = `Brisbane_Matches_${username}_${new Date().toISOString().split('T')[0]}.pdf`;
+                link.setAttribute('download', filename);
+
+                // Trigger download
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+
+                // Clean up URL object
+                window.URL.revokeObjectURL(url);
+
+                // Reset button
+                this.disabled = false;
+                this.innerHTML = '<i data-feather="download"></i> Download PDF Report';
+                feather.replace();
+
+            } catch (error) {
+                console.error('Error downloading PDF:', error);
+                alert('Failed to download PDF report. Please try again.');
+
+                // Reset button
+                this.disabled = false;
+                this.innerHTML = '<i data-feather="download"></i> Download PDF Report';
+                feather.replace();
+            }
+            });
+        }
+    </script>
+</body>
+</html>
